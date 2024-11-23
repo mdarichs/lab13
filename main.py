@@ -80,3 +80,55 @@ create_csv_file(csv_file_path)
 csv_to_json(csv_file_path, json_file_path)
 append_to_json_file(json_file_path, new_data)
 json_to_csv(json_file_path, csv_file_path)
+
+
+#Половинка Софія
+# Функція для додавання даних з CSV у JSON без дублювання
+def csv_to_json_unique_append(csv_file_path, json_file_path, new_data):
+    try:
+        # Зчитування даних із CSV-файлу
+        with open(csv_file_path, mode='r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            csv_data = [row for row in csv_reader]
+
+        # Зчитування існуючого JSON-файлу
+        with open(json_file_path, mode='r', encoding='utf-8') as json_file:
+            json_data = json.load(json_file)
+
+        # Перетворення JSON-даних у словник для швидкого пошуку за id
+        existing_ids = {int(student['id']) for student in json_data}
+
+        # Додавання записів із CSV, якщо їх id ще немає у JSON
+        for row in csv_data:
+            if int(row['id']) not in existing_ids:
+                json_data.append(row)
+                existing_ids.add(int(row['id']))
+
+        # Додавання нових даних
+        for student in new_data:
+            if int(student['id']) not in existing_ids:
+                json_data.append(student)
+                existing_ids.add(int(student['id']))
+
+        # Перезапис JSON-файлу з унікальними записами
+        with open(json_file_path, mode='w', encoding='utf-8') as json_file:
+            json.dump(json_data, json_file, indent=4, ensure_ascii=False)
+
+        print(f"Дані з '{csv_file_path}' успішно додані до JSON-файлу '{json_file_path}' без повторень.")
+    except FileNotFoundError:
+        print("CSV або JSON файл не знайдено.")
+    except IOError as e:
+        print(f"Помилка при обробці файлу: {e}")
+
+# Нові дані для додавання
+new_data = [
+    {"id": 6, "name": "Марія", "age": 23, "grade": "78"},
+    {"id": 7, "name": "Іван", "age": 24, "grade": "82"}
+]
+
+# Шляхи до файлів
+csv_file_path = 'students.csv'
+json_file_path = 'students.json'
+
+# Виклик функції
+csv_to_json_unique_append(csv_file_path, json_file_path, new_data)
